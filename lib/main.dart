@@ -284,7 +284,11 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: _isProcessing ? null : (_isListening ? _stopListening : _startListening),
+        onPressed: switch ((_isProcessing, _isListening)) {
+          (true, _) => null,
+          (false, true) => _stopListening,
+          (false, false) => _startListening,
+        },
         backgroundColor: (_isListening || _isProcessing) ? Colors.red : Colors.blue,
         child: switch ((_isProcessing, _isListening)) {
           (true, _) => const SizedBox(
