@@ -42,9 +42,9 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
     }
 
     _isListening = true;
-    
+
     await _speechToText.listen(
-      onResult: (SpeechRecognitionResult result) {
+      onResult: (result) {
         onResult?.call(result.recognizedWords, result.finalResult);
       },
       listenFor: const Duration(minutes: 5),

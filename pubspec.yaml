@@ -13,7 +13,7 @@ dependencies:
   speech_to_text: ^7.2.0
   permission_handler: ^12.0.1
   whisper_ggml: ^1.5.0
-  record: ^5.0.4
+  record: ^6.0.0
   path_provider: ^2.1.2
 
 dev_dependencies:

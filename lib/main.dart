@@ -54,7 +54,7 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
     }
 
     // Choose speech recognizer implementation
-    _speechRecognizer = _useWhisper 
+    _speechRecognizer = _useWhisper
         ? WhisperSpeechRecognizer()
         : SpeechToTextRecognizer();
 
@@ -130,6 +130,7 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
 
     setState(() {
       _isListening = true;
+      _fullTranscript = '';
       _lastWords = '';
     });
 
@@ -144,13 +145,6 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
     setState(() {
       _isListening = false;
       _isProcessing = false;
-    });
-  }
-
-  void _clearTranscript() {
-    setState(() {
-      _fullTranscript = '';
-      _lastWords = '';
     });
   }
 
@@ -169,12 +163,9 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
               _initSpeech();
             },
             icon: Icon(_useWhisper ? Icons.psychology : Icons.mic),
-            tooltip: _useWhisper ? 'Switch to SpeechToText' : 'Switch to Whisper',
-          ),
-          IconButton(
-            onPressed: _clearTranscript,
-            icon: const Icon(Icons.clear),
-            tooltip: 'Clear transcript',
+            tooltip: _useWhisper
+                ? 'Switch to SpeechToText'
+                : 'Switch to Whisper',
           ),
         ],
       ),
@@ -228,9 +219,12 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: (_isProcessing ? Colors.orange : Colors.blue).withOpacity(0.1),
+                  color: (_isProcessing ? Colors.orange : Colors.blue)
+                      .withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _isProcessing ? Colors.orange : Colors.blue),
+                  border: Border.all(
+                    color: _isProcessing ? Colors.orange : Colors.blue,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -244,9 +238,11 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
                     ],
                     Expanded(
                       child: Text(
-                        _isProcessing 
+                        _isProcessing
                             ? 'Transcribing audio...'
-                            : (_lastWords.isEmpty ? 'Say something...' : _lastWords),
+                            : (_lastWords.isEmpty
+                                  ? 'Say something...'
+                                  : _lastWords),
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
@@ -289,16 +285,18 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
           (false, true) => _stopListening,
           (false, false) => _startListening,
         },
-        backgroundColor: (_isListening || _isProcessing) ? Colors.red : Colors.blue,
+        backgroundColor: (_isListening || _isProcessing)
+            ? Colors.red
+            : Colors.blue,
         child: switch ((_isProcessing, _isListening)) {
           (true, _) => const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
+          ),
           (false, true) => const Icon(Icons.stop, color: Colors.white),
           (false, false) => const Icon(Icons.mic, color: Colors.white),
         },
