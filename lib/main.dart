@@ -127,10 +127,14 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
       onResult: _onSpeechResult,
       listenFor: const Duration(seconds: 30),
       pauseFor: const Duration(seconds: 3),
-      partialResults: true,
       localeId: 'en_US',
+      listenOptions: SpeechListenOptions(
+        listenMode: ListenMode.dictation,
+        partialResults: true,
+        onDevice: true,
+      ),
       onSoundLevelChange: (level) {
-        // Optional: show sound level indicator
+        print('LEVEL: $level');
       },
     );
   }
@@ -163,7 +167,7 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Speech Transcriber'),
+        title: const Text('Escritura'),
         actions: [
           IconButton(
             onPressed: _clearTranscript,
