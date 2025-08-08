@@ -35,6 +35,7 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
   late SpeechRecognizer _speechRecognizer;
   bool _speechEnabled = false;
   bool _isListening = false;
+  bool _isProcessing = false;
   String _lastWords = '';
   String _fullTranscript = '';
   bool _useWhisper = true; // Toggle between Whisper and SpeechToText
@@ -67,9 +68,14 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
 
     _speechRecognizer.onStatus = (status) {
       print('Speech recognition status: $status');
-      if (status == 'done' || status == 'notListening') {
+      if (status == 'processing') {
+        setState(() {
+          _isProcessing = true;
+        });
+      } else if (status == 'done' || status == 'notListening') {
         setState(() {
           _isListening = false;
+          _isProcessing = false;
         });
       }
     };
@@ -131,9 +137,13 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
   }
 
   void _stopListening() async {
+    setState(() {
+      _isProcessing = true;
+    });
     await _speechRecognizer.stopListening();
     setState(() {
       _isListening = false;
+      _isProcessing = false;
     });
   }
 
@@ -205,26 +215,42 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
 
             const SizedBox(height: 20),
 
-            if (_isListening) ...[
-              const Text(
-                'Listening...',
+            if (_isListening || _isProcessing) ...[
+              Text(
+                _isProcessing ? 'Processing...' : 'Listening...',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: _isProcessing ? Colors.orange : Colors.blue,
                 ),
               ),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: (_isProcessing ? Colors.orange : Colors.blue).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.blue),
+                  border: Border.all(color: _isProcessing ? Colors.orange : Colors.blue),
                 ),
-                child: Text(
-                  _lastWords.isEmpty ? 'Say something...' : _lastWords,
-                  style: const TextStyle(fontSize: 16),
+                child: Row(
+                  children: [
+                    if (_isProcessing) ...[
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: Text(
+                        _isProcessing 
+                            ? 'Transcribing audio...'
+                            : (_lastWords.isEmpty ? 'Say something...' : _lastWords),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -258,9 +284,18 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: _isListening ? _stopListening : _startListening,
-        backgroundColor: _isListening ? Colors.red : Colors.blue,
-        child: Icon(_isListening ? Icons.stop : Icons.mic, color: Colors.white),
+        onPressed: (_isListening || _isProcessing) ? _stopListening : _startListening,
+        backgroundColor: (_isListening || _isProcessing) ? Colors.red : Colors.blue,
+        child: _isProcessing 
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Icon(_isListening ? Icons.stop : Icons.mic, color: Colors.white),
       ),
     );
   }
