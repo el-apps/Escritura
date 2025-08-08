@@ -286,16 +286,18 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _isProcessing ? null : (_isListening ? _stopListening : _startListening),
         backgroundColor: (_isListening || _isProcessing) ? Colors.red : Colors.blue,
-        child: _isProcessing 
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Icon(_isListening ? Icons.stop : Icons.mic, color: Colors.white),
+        child: switch ((_isProcessing, _isListening)) {
+          (true, _) => const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          (false, true) => const Icon(Icons.stop, color: Colors.white),
+          (false, false) => const Icon(Icons.mic, color: Colors.white),
+        },
       ),
     );
   }
