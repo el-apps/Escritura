@@ -1,14 +1,18 @@
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:whisper_ggml/whisper_ggml.dart';
 import 'speech_recognizer.dart';
 
 class WhisperSpeechRecognizer implements SpeechRecognizer {
-  Whisper? _whisper;
+  final WhisperModel _model = WhisperModel.tiny;
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final WhisperController _whisperController = WhisperController();
   bool _isListening = false;
   bool _isAvailable = false;
-  Timer? _recordingTimer;
+  String? _currentRecordingPath;
 
   @override
   void Function(String text, bool isFinal)? onResult;
@@ -30,11 +34,15 @@ class WhisperSpeechRecognizer implements SpeechRecognizer {
     try {
       onStatus?.call('Initializing Whisper...');
       
-      // Initialize Whisper
-      _whisper = Whisper();
+      // Check microphone permission
+      if (!await _audioRecorder.hasPermission()) {
+        onError?.call('Microphone permission not granted');
+        return false;
+      }
       
-      // For now, we'll mark as available but note that model loading
-      // would need to be implemented based on the actual whisper_ggml API
+      // Initialize the model
+      await _initModel();
+      
       _isAvailable = true;
       onStatus?.call('Whisper initialized successfully');
       return true;
@@ -45,9 +53,24 @@ class WhisperSpeechRecognizer implements SpeechRecognizer {
     }
   }
 
+  Future<void> _initModel() async {
+    try {
+      // Try initializing the model from assets first
+      final bytesBase = await rootBundle.load('assets/ggml-${_model.modelName}.bin');
+      final modelPathBase = await _whisperController.getPath(_model);
+      final fileBase = File(modelPathBase);
+      await fileBase.writeAsBytes(bytesBase.buffer
+          .asUint8List(bytesBase.offsetInBytes, bytesBase.lengthInBytes));
+    } catch (e) {
+      // On error try downloading the model
+      onStatus?.call('Downloading Whisper model...');
+      await _whisperController.downloadModel(_model);
+    }
+  }
+
   @override
   Future<void> startListening() async {
-    if (!_isAvailable || _whisper == null) {
+    if (!_isAvailable) {
       onError?.call('Whisper not available');
       return;
     }
@@ -60,12 +83,14 @@ class WhisperSpeechRecognizer implements SpeechRecognizer {
       _isListening = true;
       onStatus?.call('listening');
       
-      // Note: This is a placeholder implementation
-      // The actual whisper_ggml API may differ
-      // You would need to implement audio recording and transcription
-      // based on the package's actual documentation
+      // Start recording
+      final Directory appDirectory = await getTemporaryDirectory();
+      _currentRecordingPath = '${appDirectory.path}/whisper_recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
       
-      onResult?.call('Whisper transcription not yet implemented', false);
+      await _audioRecorder.start(
+        const RecordConfig(),
+        path: _currentRecordingPath!,
+      );
       
     } catch (e) {
       _isListening = false;
@@ -82,11 +107,34 @@ class WhisperSpeechRecognizer implements SpeechRecognizer {
 
     try {
       _isListening = false;
-      _recordingTimer?.cancel();
-      onStatus?.call('done');
+      onStatus?.call('processing');
       
-      // Placeholder for final transcription
-      onResult?.call('Final transcription placeholder', true);
+      // Stop recording
+      final audioPath = await _audioRecorder.stop();
+      
+      if (audioPath != null) {
+        // Transcribe the audio
+        final result = await _whisperController.transcribe(
+          model: _model,
+          audioPath: audioPath,
+          lang: 'en',
+        );
+        
+        if (result?.transcription.text != null && result!.transcription.text.isNotEmpty) {
+          onResult?.call(result.transcription.text, true);
+        } else {
+          onResult?.call('No speech detected', true);
+        }
+        
+        // Clean up the temporary file
+        try {
+          await File(audioPath).delete();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      } else {
+        onError?.call('No recording found');
+      }
       
       onStatus?.call('notListening');
     } catch (e) {
@@ -96,7 +144,8 @@ class WhisperSpeechRecognizer implements SpeechRecognizer {
   }
 
   void dispose() {
-    _recordingTimer?.cancel();
-    _whisper = null;
+    if (_isListening) {
+      _audioRecorder.stop();
+    }
   }
 }
