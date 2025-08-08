@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'speech_recognizer.dart';
+import 'whisper_speech_recognizer.dart';
+import 'speech_to_text_recognizer.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,11 +32,12 @@ class EscrituraHomePage extends StatefulWidget {
 }
 
 class _EscrituraHomePageState extends State<EscrituraHomePage> {
-  final SpeechToText _speechToText = SpeechToText();
+  late SpeechRecognizer _speechRecognizer;
   bool _speechEnabled = false;
   bool _isListening = false;
   String _lastWords = '';
   String _fullTranscript = '';
+  bool _useWhisper = true; // Toggle between Whisper and SpeechToText
 
   @override
   void initState() {
@@ -50,37 +52,39 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
       return;
     }
 
-    _speechEnabled = await _speechToText.initialize(
-      onError: (val) {
-        print('Speech recognition error: $val');
+    // Choose speech recognizer implementation
+    _speechRecognizer = _useWhisper 
+        ? WhisperSpeechRecognizer()
+        : SpeechToTextRecognizer();
+
+    // Set up callbacks
+    _speechRecognizer.onError = (error) {
+      print('Speech recognition error: $error');
+      setState(() {
+        _isListening = false;
+      });
+    };
+
+    _speechRecognizer.onStatus = (status) {
+      print('Speech recognition status: $status');
+      if (status == 'done' || status == 'notListening') {
         setState(() {
           _isListening = false;
         });
-      },
-      onStatus: (val) {
-        print('Speech recognition status: $val');
-        if (val == 'done' || val == 'notListening') {
-          setState(() {
-            _isListening = false;
-          });
-        }
-      },
-    );
-
-    setState(() {});
-
-    if (_speechEnabled) {
-      var locales = await _speechToText.locales();
-      print('Available locales: ${locales.length}');
-
-      var offlineLocale = locales
-          .where((locale) => locale.localeId.startsWith('en'))
-          .firstOrNull;
-
-      if (offlineLocale != null) {
-        print('Using locale: ${offlineLocale.localeId}');
       }
-    }
+    };
+
+    _speechRecognizer.onResult = (text, isFinal) {
+      setState(() {
+        _lastWords = text;
+        if (isFinal) {
+          _fullTranscript += '$text\n';
+        }
+      });
+    };
+
+    _speechEnabled = await _speechRecognizer.initialize();
+    setState(() {});
   }
 
   void _showPermissionDialog() {
@@ -123,32 +127,13 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
       _lastWords = '';
     });
 
-    await _speechToText.listen(
-      onResult: _onSpeechResult,
-      listenFor: const Duration(minutes: 5),
-      pauseFor: const Duration(seconds: 30),
-      localeId: 'en_US',
-      listenOptions: SpeechListenOptions(
-        listenMode: ListenMode.dictation,
-        partialResults: true,
-        onDevice: true,
-      ),
-    );
+    await _speechRecognizer.startListening();
   }
 
   void _stopListening() async {
-    await _speechToText.stop();
+    await _speechRecognizer.stopListening();
     setState(() {
       _isListening = false;
-    });
-  }
-
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    setState(() {
-      _lastWords = result.recognizedWords;
-      if (result.finalResult) {
-        _fullTranscript += '${_lastWords}\n';
-      }
     });
   }
 
@@ -166,6 +151,16 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Escritura'),
         actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _useWhisper = !_useWhisper;
+              });
+              _initSpeech();
+            },
+            icon: Icon(_useWhisper ? Icons.psychology : Icons.mic),
+            tooltip: _useWhisper ? 'Switch to SpeechToText' : 'Switch to Whisper',
+          ),
           IconButton(
             onPressed: _clearTranscript,
             icon: const Icon(Icons.clear),
@@ -197,7 +192,7 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
                   const SizedBox(width: 8),
                   Text(
                     _speechEnabled
-                        ? 'Speech recognition ready'
+                        ? 'Speech recognition ready (${_useWhisper ? 'Whisper' : 'SpeechToText'})'
                         : 'Speech recognition not available',
                     style: TextStyle(
                       color: _speechEnabled ? Colors.green : Colors.red,
