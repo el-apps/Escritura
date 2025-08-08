@@ -125,17 +125,14 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
 
     await _speechToText.listen(
       onResult: _onSpeechResult,
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 3),
+      listenFor: const Duration(minutes: 5),
+      pauseFor: const Duration(seconds: 30),
       localeId: 'en_US',
       listenOptions: SpeechListenOptions(
         listenMode: ListenMode.dictation,
         partialResults: true,
         onDevice: true,
       ),
-      onSoundLevelChange: (level) {
-        print('LEVEL: $level');
-      },
     );
   }
 
