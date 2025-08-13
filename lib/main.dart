@@ -57,6 +57,10 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
                   ? TextFormField(
                       maxLines: 5,
                       initialValue: input,
+                      decoration: InputDecoration(
+                        hintText:
+                            "Enter the verse here. Voice input is recommended!",
+                      ),
                       onChanged: (String value) =>
                           setState(() => input = value),
                     )
