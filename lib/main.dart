@@ -1,3 +1,4 @@
+import 'package:escritura/verse_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'speech_recognizer.dart';
@@ -172,7 +173,10 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 16,
           children: [
+            VerseViewer(),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -203,8 +207,6 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
                 ],
               ),
             ),
-
-            const SizedBox(height: 20),
 
             if (_isListening || _isProcessing) ...[
               Text(
@@ -249,7 +251,6 @@ class _EscrituraHomePageState extends State<EscrituraHomePage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
             ],
 
             Expanded(
