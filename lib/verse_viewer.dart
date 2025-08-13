@@ -10,8 +10,8 @@ class VerseViewer extends StatefulWidget {
 
 class _VerseViewerState extends State<VerseViewer> {
   String? selectedBookId;
-  int? selectedChapterNum;
-  int? selectedVerseNum;
+  int? selectedChapterNumber;
+  int? selectedVerseNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +49,7 @@ class _VerseViewerState extends State<VerseViewer> {
                   DropdownMenu(
                     width: double.infinity,
                     dropdownMenuEntries:
-                        (snapshot.data!.booksMap[selectedBookId]?.chapters ??
-                                [])
+                        (snapshot.data!.getChapters(selectedBookId!))
                             .map<DropdownMenuEntry<int>>(
                               (chapter) => DropdownMenuEntry(
                                 value: chapter.num,
@@ -59,18 +58,16 @@ class _VerseViewerState extends State<VerseViewer> {
                             )
                             .toList(),
                     onSelected: (chapterNum) =>
-                        setState(() => selectedChapterNum = chapterNum),
+                        setState(() => selectedChapterNumber = chapterNum),
                   ),
-                if (selectedChapterNum != null)
+                if (selectedChapterNumber != null)
                   DropdownMenu(
                     width: double.infinity,
                     dropdownMenuEntries:
-                        (snapshot
-                                    .data!
-                                    .booksMap[selectedBookId]
-                                    ?.chapters[selectedChapterNum! - 1]
-                                    .verses ??
-                                [])
+                        (snapshot.data!.getVerses(
+                              selectedBookId!,
+                              selectedChapterNumber!,
+                            ))
                             .map<DropdownMenuEntry<int>>(
                               (verse) => DropdownMenuEntry(
                                 value: verse.num,
@@ -79,17 +76,15 @@ class _VerseViewerState extends State<VerseViewer> {
                             )
                             .toList(),
                     onSelected: (verseNum) =>
-                        setState(() => selectedVerseNum = verseNum),
+                        setState(() => selectedVerseNumber = verseNum),
                   ),
-                if (selectedVerseNum != null)
+                if (selectedVerseNumber != null)
                   Text(
-                    snapshot
-                            .data!
-                            .booksMap[selectedBookId]
-                            ?.chapters[selectedChapterNum! - 1]
-                            .verses[selectedVerseNum! - 1]
-                            .text ??
-                        '',
+                    snapshot.data!.getVerse(
+                      selectedBookId!,
+                      selectedChapterNumber!,
+                      selectedVerseNumber!,
+                    ),
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
               ],
