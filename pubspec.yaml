@@ -5,12 +5,16 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.0.1+1
 
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.9.0
 
 dependencies:
   flutter:
     sdk: flutter
   bible_parser_flutter: ^0.1.0
+  word_tools:
+    git:
+      url: git@github.com:el-apps/word_tools.git
+      ref: v0.1.0
 
 dev_dependencies:
   flutter_test:
