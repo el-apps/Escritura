@@ -1,6 +1,7 @@
 import 'package:escritura/bible_service.dart';
 import 'package:escritura/scripture_ref.dart';
 import 'package:escritura/verse_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:word_tools/word_tools.dart';
@@ -63,6 +64,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
             if (bibleService.hasVerse(_ref))
               TextFormField(
                 controller: _inputController,
+                autofocus: true,
                 maxLines: 5,
                 decoration: InputDecoration(
                   hintText: "Enter the verse here. Voice input is recommended!",
@@ -84,7 +86,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                   Result.unknown => '',
                 }, style: Theme.of(context).textTheme.bodyLarge),
               ),
-            if (_input.isNotEmpty)
+            if (_input.isNotEmpty && _result != Result.correct)
               Row(
                 spacing: 8,
                 children: [
@@ -102,6 +104,8 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                   ),
                 ],
               ),
+            // TODO: after getting a correct answer, show a button to go to
+            //       the next verse in the user's list
           ],
         ),
       ),
@@ -115,8 +119,10 @@ class _VerseMemorizationState extends State<VerseMemorization> {
   });
 
   void _gradeSubmission(String actualVerse) {
-    print(actualVerse);
-    print(_input);
+    if (kDebugMode) {
+      print(actualVerse);
+      print(_input);
+    }
     setState(
       () => _result = doWordSequencesMatch(actualVerse, _input)
           ? Result.correct
