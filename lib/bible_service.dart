@@ -1,15 +1,18 @@
 import 'package:bible_parser_flutter/bible_parser_flutter.dart';
+import 'package:escritura/scripture_ref.dart';
 import 'package:flutter/material.dart';
 
 class BibleService {
   late BibleParser _parser;
   late List<Book> _books;
   late Map<String, Book> _booksMap;
+  bool _isLoaded = false;
 
+  get isLoaded => _isLoaded;
   List<Book> get books => _books;
   Map<String, Book> get booksMap => _booksMap;
 
-  Future<BibleService> load(BuildContext context) async {
+  Future load(BuildContext context) async {
     final xmlString = await DefaultAssetBundle.of(
       context,
     ).loadString('assets/kjv.xml');
@@ -18,7 +21,7 @@ class BibleService {
         .where((b) => b.title != 'Unknown')
         .toList();
     _booksMap = Map.fromEntries(_books.map((b) => MapEntry(b.id, b)));
-    return this;
+    _isLoaded = true;
   }
 
   List<Chapter> getChapters(String bookId) {
@@ -37,6 +40,10 @@ class BibleService {
         verseNumber > getVerses(bookId, chapterNumber).length) {
       return '';
     }
-    return getVerses(bookId, chapterNumber)[verseNumber - 1].text;
+    return getVerses(bookId, chapterNumber)[verseNumber - 1].text.trim();
   }
+
+  hasVerse(ScriptureRef ref) =>
+      ref.complete &&
+      getVerse(ref.bookId!, ref.chapterNumber!, ref.verseNumber!).isNotEmpty;
 }
