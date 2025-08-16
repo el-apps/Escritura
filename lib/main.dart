@@ -29,7 +29,10 @@ class _EscrituraAppState extends State<EscrituraApp> {
   Widget build(BuildContext context) => MaterialApp(
     title: 'Escritura',
     theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.brown,
+        brightness: Brightness.dark,
+      ),
       useMaterial3: true,
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
