@@ -34,6 +34,14 @@ jobs:
           channel: 'main'
       - name: Get Flutter dependencies    
         run: flutter pub get
+      - name: Decode keystore
+        run: echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/app/upload-keystore.jks
+      - name: Create key.properties
+        run: |
+          echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
+          echo "storePassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
       - name: Build APK Release             
         run: flutter build apk --release
       - name: Save APK to Artifacts
