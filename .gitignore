@@ -47,4 +47,4 @@ app.*.map.json
 .aider*
 
 upload-keystore.jks
-android/keystore.properties
+android/key.properties
