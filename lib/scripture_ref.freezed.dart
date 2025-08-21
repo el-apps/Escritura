@@ -32,10 +32,6 @@ bool operator ==(Object other) {
 @override
 int get hashCode => Object.hash(runtimeType,bookId,chapterNumber,verseNumber);
 
-@override
-String toString() {
-  return 'ScriptureRef(bookId: $bookId, chapterNumber: $chapterNumber, verseNumber: $verseNumber)';
-}
 
 
 }
@@ -232,10 +228,6 @@ bool operator ==(Object other) {
 @override
 int get hashCode => Object.hash(runtimeType,bookId,chapterNumber,verseNumber);
 
-@override
-String toString() {
-  return 'ScriptureRef(bookId: $bookId, chapterNumber: $chapterNumber, verseNumber: $verseNumber)';
-}
 
 
 }

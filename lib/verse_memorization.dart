@@ -18,6 +18,8 @@ class _VerseMemorizationState extends State<VerseMemorization> {
   late TextEditingController _inputController;
   String _input = '';
   Result _result = Result.unknown;
+  int _attempts = 0;
+  List<PracticeResult> _session = [];
 
   @override
   void initState() {
@@ -45,6 +47,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
             VerseSelector(
               onSelected: (ref) => setState(() {
                 _ref = ref;
+                _attempts = 0;
                 _clear();
               }),
             ),
@@ -106,6 +109,20 @@ class _VerseMemorizationState extends State<VerseMemorization> {
               ),
             // TODO: after getting a correct answer, show a button to go to
             //       the next verse in the user's list
+            // TODO: move these to a separate page
+            if (_session.isNotEmpty) ...[
+              Divider(),
+              Text(
+                'Session Results',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+            for (final (:ref, :attempts) in _session)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // TODO: get prettier string from bible service
+                children: [Text('$ref'), Text(attempts == 1 ? '🎉' : '✅')],
+              ),
           ],
         ),
       ),
@@ -123,11 +140,15 @@ class _VerseMemorizationState extends State<VerseMemorization> {
       print(actualVerse);
       print(_input);
     }
-    setState(
-      () => _result = doWordSequencesMatch(actualVerse, _input)
+    setState(() {
+      _attempts += 1;
+      _result = doWordSequencesMatch(actualVerse, _input)
           ? Result.correct
-          : Result.incorrect,
-    );
+          : Result.incorrect;
+      if (_result == Result.correct) {
+        _session.add((ref: _ref, attempts: _attempts));
+      }
+    });
   }
 }
 
@@ -140,3 +161,5 @@ enum Result {
 
   const Result({required this.color});
 }
+
+typedef PracticeResult = ({ScriptureRef ref, int attempts});
