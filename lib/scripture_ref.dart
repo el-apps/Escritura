@@ -14,4 +14,7 @@ abstract class ScriptureRef with _$ScriptureRef {
 
   bool get complete =>
       bookId != null && chapterNumber != null && verseNumber != null;
+
+  @override
+  toString() => complete ? '$bookId $chapterNumber:$verseNumber' : 'Unknown';
 }
