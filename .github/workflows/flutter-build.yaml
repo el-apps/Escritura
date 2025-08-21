@@ -35,7 +35,7 @@ jobs:
       - name: Get Flutter dependencies    
         run: flutter pub get
       - name: Decode keystore
-        run: echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/app/upload-keystore.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
       - name: Create key.properties
         run: |
           echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
