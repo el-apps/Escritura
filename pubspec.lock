@@ -740,11 +740,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.1.0"
-      resolved-ref: e712415ecea6bafe60f4b1d955a99eab12b32a59
+      ref: "v0.1.1"
+      resolved-ref: "393ce2854f60b49eddce735a0b3b7476a53cdb65"
       url: "https://github.com/el-apps/word_tools.git"
     source: git
-    version: "0.1.0+1"
+    version: "0.1.1+2"
   xdg_directories:
     dependency: transitive
     description:
