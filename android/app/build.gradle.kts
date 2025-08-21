@@ -31,15 +31,15 @@ android {
 
     signingConfigs {
        release {
-           keyAlias keystoreProperties['keyAlias']
-           keyPassword keystoreProperties['keyPassword']
-           storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-           storePassword keystoreProperties['storePassword']
+           keyAlias = keystoreProperties['keyAlias']
+           keyPassword = keystoreProperties['keyPassword']
+           storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+           storePassword = keystoreProperties['storePassword']
        }
     }
     buildTypes {
        release {
-           signingConfig signingConfigs.release
+           signingConfig = signingConfigs.release
        }
     }
 }
