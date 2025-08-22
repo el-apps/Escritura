@@ -25,6 +25,7 @@ class ShareDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         spacing: 4,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Daily sharing your results with others is a great way to practice accountability!',
