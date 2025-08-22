@@ -1,5 +1,7 @@
 import 'package:escritura/bible_service.dart';
+import 'package:escritura/practice_result.dart';
 import 'package:escritura/scripture_ref.dart';
+import 'package:escritura/share_dialog.dart';
 import 'package:escritura/verse_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +21,8 @@ class _VerseMemorizationState extends State<VerseMemorization> {
   String _input = '';
   Result _result = Result.unknown;
   int _attempts = 0;
-  List<PracticeResult> _session = [];
+  // TODO: store these in the DB instead of in widget state
+  final List<MemorizationResult> _results = [];
 
   @override
   void initState() {
@@ -37,93 +40,88 @@ class _VerseMemorizationState extends State<VerseMemorization> {
             _ref.verseNumber!,
           )
         : '';
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 16,
-          children: [
-            VerseSelector(
-              onSelected: (ref) => setState(() {
-                _ref = ref;
-                _attempts = 0;
-                _clear();
-              }),
-            ),
-            if (_result != Result.unknown && bibleService.hasVerse(_ref))
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.brown.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.brown),
-                ),
-                child: Text(
-                  actualVerse,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Memorize'),
+        actions: [
+          IconButton(icon: Icon(Icons.share), onPressed: _shareResults),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 16,
+            children: [
+              VerseSelector(
+                onSelected: (ref) => setState(() {
+                  _ref = ref;
+                  _attempts = 0;
+                  _clear();
+                }),
               ),
-            if (bibleService.hasVerse(_ref))
-              TextFormField(
-                controller: _inputController,
-                autofocus: true,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: "Enter the verse here. Voice input is recommended!",
-                ),
-                onChanged: (String value) => setState(() => _input = value),
-              ),
-            if (_result != Result.unknown)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _result.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _result.color),
-                ),
-                child: Text(switch (_result) {
-                  Result.incorrect => 'Try again',
-                  Result.correct => 'Correct!',
-                  // This case should never be reached
-                  Result.unknown => '',
-                }, style: Theme.of(context).textTheme.bodyLarge),
-              ),
-            if (_input.isNotEmpty && _result != Result.correct)
-              Row(
-                spacing: 8,
-                children: [
-                  Expanded(
-                    child: FilledButton.tonal(
-                      onPressed: _clear,
-                      child: Text('Clear'),
-                    ),
+              if (_result != Result.unknown && bibleService.hasVerse(_ref))
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.brown.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.brown),
                   ),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () => _gradeSubmission(actualVerse),
-                      child: Text('Submit'),
-                    ),
+                  child: Text(
+                    actualVerse,
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                ],
-              ),
-            // TODO: after getting a correct answer, show a button to go to
-            //       the next verse in the user's list
-            // TODO: move these to a separate page
-            if (_session.isNotEmpty) ...[
-              Divider(),
-              Text(
-                'Session Results',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+                ),
+              if (bibleService.hasVerse(_ref))
+                TextFormField(
+                  controller: _inputController,
+                  autofocus: true,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText:
+                        "Enter the verse here. Voice input is recommended!",
+                  ),
+                  onChanged: (String value) => setState(() => _input = value),
+                ),
+              if (_result != Result.unknown)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _result.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: _result.color),
+                  ),
+                  child: Text(switch (_result) {
+                    Result.incorrect => 'Try again',
+                    Result.correct => 'Correct!',
+                    // This case should never be reached
+                    Result.unknown => '',
+                  }, style: Theme.of(context).textTheme.bodyLarge),
+                ),
+              if (_input.isNotEmpty && _result != Result.correct)
+                Row(
+                  spacing: 8,
+                  children: [
+                    Expanded(
+                      child: FilledButton.tonal(
+                        onPressed: _clear,
+                        child: Text('Clear'),
+                      ),
+                    ),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () => _gradeSubmission(actualVerse),
+                        child: Text('Submit'),
+                      ),
+                    ),
+                  ],
+                ),
+              // TODO: after getting a correct answer, show a button to go to
+              //       the next verse in the user's list
             ],
-            for (final (:ref, :attempts) in _session)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                // TODO: get prettier string from bible service
-                children: [Text('$ref'), Text(attempts == 1 ? '🎉' : '✅')],
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -146,10 +144,15 @@ class _VerseMemorizationState extends State<VerseMemorization> {
           ? Result.correct
           : Result.incorrect;
       if (_result == Result.correct) {
-        _session.add((ref: _ref, attempts: _attempts));
+        _results.add((ref: _ref, attempts: _attempts));
       }
     });
   }
+
+  void _shareResults() => showDialog(
+    context: context,
+    builder: (_) => ShareDialog(memorizationResults: _results),
+  );
 }
 
 enum Result {
@@ -161,5 +164,3 @@ enum Result {
 
   const Result({required this.color});
 }
-
-typedef PracticeResult = ({ScriptureRef ref, int attempts});
