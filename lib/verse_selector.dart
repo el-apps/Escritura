@@ -3,17 +3,11 @@ import 'package:escritura/scripture_ref.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class VerseSelector extends StatefulWidget {
-  const VerseSelector({super.key, required this.onSelected});
+class VerseSelector extends StatelessWidget {
+  const VerseSelector({super.key, required this.ref, required this.onSelected});
 
+  final ScriptureRef ref;
   final Function(ScriptureRef) onSelected;
-
-  @override
-  State<StatefulWidget> createState() => _VerseSelectorState();
-}
-
-class _VerseSelectorState extends State<VerseSelector> {
-  ScriptureRef _selectedRef = ScriptureRef();
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +31,25 @@ class _VerseSelectorState extends State<VerseSelector> {
                       DropdownMenuEntry(value: book.id, label: book.title),
                 )
                 .toList(),
-            onSelected: (bookId) =>
-                _select(_selectedRef.copyWith(bookId: bookId)),
+            onSelected: (bookId) => onSelected(
+              ref.copyWith(
+                bookId: bookId,
+                chapterNumber: ref.chapterNumber ?? 1,
+                verseNumber: ref.verseNumber ?? 1,
+              ),
+            ),
           ),
-          if (_selectedRef.bookId != null)
+          if (ref.bookId != null)
             Row(
               spacing: 8,
               children: [
-                if (_selectedRef.bookId != null)
+                if (ref.bookId != null)
                   Expanded(
                     child: DropdownMenu(
                       expandedInsets: EdgeInsets.zero,
+                      initialSelection: ref.chapterNumber,
                       dropdownMenuEntries:
-                          (bibleService.getChapters(_selectedRef.bookId!))
+                          (bibleService.getChapters(ref.bookId!))
                               .map<DropdownMenuEntry<int>>(
                                 (chapter) => DropdownMenuEntry(
                                   value: chapter.num,
@@ -57,19 +57,23 @@ class _VerseSelectorState extends State<VerseSelector> {
                                 ),
                               )
                               .toList(),
-                      onSelected: (chapterNumber) => _select(
-                        _selectedRef.copyWith(chapterNumber: chapterNumber),
+                      onSelected: (chapterNumber) => onSelected(
+                        ref.copyWith(
+                          chapterNumber: chapterNumber,
+                          verseNumber: ref.verseNumber ?? 1,
+                        ),
                       ),
                     ),
                   ),
-                if (_selectedRef.chapterNumber != null)
+                if (ref.chapterNumber != null)
                   Expanded(
                     child: DropdownMenu(
                       expandedInsets: EdgeInsets.zero,
+                      initialSelection: ref.verseNumber,
                       dropdownMenuEntries:
                           (bibleService.getVerses(
-                                _selectedRef.bookId!,
-                                _selectedRef.chapterNumber!,
+                                ref.bookId!,
+                                ref.chapterNumber!,
                               ))
                               .map<DropdownMenuEntry<int>>(
                                 (verse) => DropdownMenuEntry(
@@ -78,9 +82,8 @@ class _VerseSelectorState extends State<VerseSelector> {
                                 ),
                               )
                               .toList(),
-                      onSelected: (verseNumber) => _select(
-                        _selectedRef.copyWith(verseNumber: verseNumber),
-                      ),
+                      onSelected: (verseNumber) =>
+                          onSelected(ref.copyWith(verseNumber: verseNumber)),
                     ),
                   ),
               ],
@@ -88,10 +91,5 @@ class _VerseSelectorState extends State<VerseSelector> {
         ],
       ),
     );
-  }
-
-  _select(ScriptureRef ref) {
-    setState(() => _selectedRef = ref);
-    widget.onSelected(ref);
   }
 }
