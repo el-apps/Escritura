@@ -16,5 +16,16 @@ abstract class ScriptureRef with _$ScriptureRef {
       bookId != null && chapterNumber != null && verseNumber != null;
 
   @override
-  toString() => complete ? '$bookId $chapterNumber:$verseNumber' : 'Unknown';
+  toString() {
+    if (bookId == null) {
+      return 'Unknown';
+    }
+    if (chapterNumber == null) {
+      return bookId!;
+    }
+    if (verseNumber == null) {
+      return '$bookId $chapterNumber';
+    }
+    return '$bookId $chapterNumber:$verseNumber';
+  }
 }

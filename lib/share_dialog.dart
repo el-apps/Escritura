@@ -8,11 +8,13 @@ class ShareDialog extends StatelessWidget {
   // TODO: fetch these from the DB
   final List<MemorizationResult> memorizationResults;
 
-  get _shareContent => [
-    memorizationResults
-        // TODO: get prettier string from bible service
-        .map((result) => '${result.ref} ${result.attempts == 1 ? "🎉" : "✅"}')
-        .join('\n'),
+  String get _shareContent => [
+    [
+      'Memorization',
+      ...memorizationResults
+      // TODO: get prettier string from bible service
+      .map((result) => '${result.attempts == 1 ? "🎉" : "✅"} ${result.ref}'),
+    ].join('\n'),
     // TODO: add results from other parts of the app
   ].where((section) => section.isNotEmpty).join('----------\n');
 
@@ -27,7 +29,7 @@ class ShareDialog extends StatelessWidget {
           Text(
             'Daily sharing your results with others is a great way to practice accountability!',
           ),
-          Divider(),
+          if (_shareContent.isNotEmpty) Divider(),
           Text(_shareContent),
         ],
       ),

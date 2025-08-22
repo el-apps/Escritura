@@ -55,6 +55,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
             spacing: 16,
             children: [
               VerseSelector(
+                ref: _ref,
                 onSelected: (ref) => setState(() {
                   _ref = ref;
                   _attempts = 0;
@@ -118,8 +119,19 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                     ),
                   ],
                 ),
-              // TODO: after getting a correct answer, show a button to go to
-              //       the next verse in the user's list
+              if (_result == Result.correct && _ref.complete)
+                FilledButton(
+                  onPressed: () {
+                    _clear();
+                    // TODO: go to the next verse in the user's queue
+                    setState(
+                      () => _ref = _ref.copyWith(
+                        verseNumber: _ref.verseNumber! + 1,
+                      ),
+                    );
+                  },
+                  child: Text('Next'),
+                ),
             ],
           ),
         ),
