@@ -138,7 +138,10 @@ class _VerseMemorizationState extends State<VerseMemorization> {
       _attempts = 0;
       _score = 0;
       _clearInput();
-      _inputFocusNode.requestFocus();
+      // Focus the input field after we render the next frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _inputFocusNode.requestFocus();
+      });
     });
   }
 
