@@ -18,8 +18,10 @@ class VerseMemorization extends StatefulWidget {
 class _VerseMemorizationState extends State<VerseMemorization> {
   ScriptureRef _ref = ScriptureRef();
   late TextEditingController _inputController;
+  final FocusNode _inputFocusNode = FocusNode();
   String _input = '';
   Result _result = Result.unknown;
+  double _score = 0;
   int _attempts = 0;
   // TODO: store these in the DB instead of in widget state
   final List<MemorizationResult> _results = [];
@@ -71,7 +73,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
               if (bibleService.hasVerse(_ref))
                 TextFormField(
                   controller: _inputController,
-                  autofocus: true,
+                  focusNode: _inputFocusNode,
                   maxLines: 5,
                   decoration: InputDecoration(
                     hintText:
@@ -112,7 +114,8 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                     ),
                   ],
                 ),
-              if (_result == Result.correct && _ref.complete)
+              if (_result == Result.correct && _ref.complete) ...[
+                LinearProgressIndicator(value: _score),
                 FilledButton(
                   // TODO: go to the next verse in the user's queue
                   onPressed: () => _selectRef(
@@ -120,6 +123,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                   ),
                   child: Text('Next'),
                 ),
+              ],
             ],
           ),
         ),
@@ -132,7 +136,12 @@ class _VerseMemorizationState extends State<VerseMemorization> {
       _ref = ref;
       _result = Result.unknown;
       _attempts = 0;
+      _score = 0;
       _clearInput();
+      // Focus the input field after we render the next frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _inputFocusNode.requestFocus();
+      });
     });
   }
 
@@ -146,13 +155,15 @@ class _VerseMemorizationState extends State<VerseMemorization> {
       print(actualVerse);
       print(_input);
     }
+    _inputFocusNode.unfocus();
     setState(() {
       _attempts += 1;
-      _result = doWordSequencesMatch(actualVerse, _input)
-          ? Result.correct
-          : Result.incorrect;
+      _score = compareWordSequences(actualVerse, _input);
+      _result = _score >= 0.6 ? Result.correct : Result.incorrect;
       if (_result == Result.correct) {
-        _results.add((ref: _ref, attempts: _attempts));
+        _results.add(
+          MemorizationResult(ref: _ref, attempts: _attempts, score: _score),
+        );
       }
     });
   }
