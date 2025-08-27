@@ -8,7 +8,7 @@ jobs:
   run_code_review_bot:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mrs-electronics-inc/bots/code-review:latest
+      image: ghcr.io/mrs-electronics-inc/bots/code-review:0.8.0-rc10
       volumes:
         - ${{ github.workspace }}:/repo
     defaults:
