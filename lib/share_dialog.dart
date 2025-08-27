@@ -13,7 +13,10 @@ class ShareDialog extends StatelessWidget {
       'Memorization',
       ...memorizationResults
       // TODO: get prettier string from bible service
-      .map((result) => '${result.attempts == 1 ? "🎉" : "✅"} ${result.ref}'),
+      .map(
+        (result) =>
+            '${result.scoreString} ${result.attempts == 1 ? "" : "(${result.attempts})"} ${result.ref}',
+      ),
     ].join('\n'),
     // TODO: add results from other parts of the app
   ].where((section) => section.isNotEmpty).join('----------\n');

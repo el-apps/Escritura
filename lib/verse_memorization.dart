@@ -20,6 +20,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
   late TextEditingController _inputController;
   String _input = '';
   Result _result = Result.unknown;
+  double _score = 0;
   int _attempts = 0;
   // TODO: store these in the DB instead of in widget state
   final List<MemorizationResult> _results = [];
@@ -112,7 +113,8 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                     ),
                   ],
                 ),
-              if (_result == Result.correct && _ref.complete)
+              if (_result == Result.correct && _ref.complete) ...[
+                LinearProgressIndicator(value: _score),
                 FilledButton(
                   // TODO: go to the next verse in the user's queue
                   onPressed: () => _selectRef(
@@ -120,6 +122,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                   ),
                   child: Text('Next'),
                 ),
+              ],
             ],
           ),
         ),
@@ -132,6 +135,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
       _ref = ref;
       _result = Result.unknown;
       _attempts = 0;
+      _score = 0;
       _clearInput();
     });
   }
@@ -148,11 +152,12 @@ class _VerseMemorizationState extends State<VerseMemorization> {
     }
     setState(() {
       _attempts += 1;
-      _result = doWordSequencesMatch(actualVerse, _input)
-          ? Result.correct
-          : Result.incorrect;
+      _score = compareWordSequences(actualVerse, _input);
+      _result = _score > 0.5 ? Result.correct : Result.incorrect;
       if (_result == Result.correct) {
-        _results.add((ref: _ref, attempts: _attempts));
+        _results.add(
+          MemorizationResult(ref: _ref, attempts: _attempts, score: _score),
+        );
       }
     });
   }
