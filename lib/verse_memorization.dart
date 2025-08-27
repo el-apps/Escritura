@@ -18,6 +18,7 @@ class VerseMemorization extends StatefulWidget {
 class _VerseMemorizationState extends State<VerseMemorization> {
   ScriptureRef _ref = ScriptureRef();
   late TextEditingController _inputController;
+  final FocusNode _inputFocusNode = FocusNode();
   String _input = '';
   Result _result = Result.unknown;
   double _score = 0;
@@ -72,7 +73,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
               if (bibleService.hasVerse(_ref))
                 TextFormField(
                   controller: _inputController,
-                  autofocus: true,
+                  focusNode: _inputFocusNode,
                   maxLines: 5,
                   decoration: InputDecoration(
                     hintText:
@@ -137,6 +138,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
       _attempts = 0;
       _score = 0;
       _clearInput();
+      _inputFocusNode.requestFocus();
     });
   }
 
@@ -150,10 +152,11 @@ class _VerseMemorizationState extends State<VerseMemorization> {
       print(actualVerse);
       print(_input);
     }
+    _inputFocusNode.unfocus();
     setState(() {
       _attempts += 1;
       _score = compareWordSequences(actualVerse, _input);
-      _result = _score > 0.5 ? Result.correct : Result.incorrect;
+      _result = _score >= 0.6 ? Result.correct : Result.incorrect;
       if (_result == Result.correct) {
         _results.add(
           MemorizationResult(ref: _ref, attempts: _attempts, score: _score),

@@ -16,16 +16,15 @@ abstract class ScriptureRef with _$ScriptureRef {
       bookId != null && chapterNumber != null && verseNumber != null;
 
   @override
-  toString() {
-    if (bookId == null) {
-      return 'Unknown';
-    }
-    if (chapterNumber == null) {
-      return bookId!;
-    }
-    if (verseNumber == null) {
-      return '$bookId $chapterNumber';
-    }
-    return '$bookId $chapterNumber:$verseNumber';
+  toString() => refString(bookId, chapterNumber, verseNumber);
+}
+
+String refString(String? bookTitle, int? chapterNumber, int? verseNumber) {
+  if (chapterNumber == null) {
+    return bookTitle ?? 'Unknown';
   }
+  if (verseNumber == null) {
+    return '$bookTitle $chapterNumber';
+  }
+  return '$bookTitle $chapterNumber:$verseNumber';
 }

@@ -46,4 +46,10 @@ class BibleService {
   hasVerse(ScriptureRef ref) =>
       ref.complete &&
       getVerse(ref.bookId!, ref.chapterNumber!, ref.verseNumber!).isNotEmpty;
+
+  getRefName(ScriptureRef ref) => refString(
+    booksMap[ref.bookId]?.title ?? 'Unknown',
+    ref.chapterNumber,
+    ref.verseNumber,
+  );
 }
