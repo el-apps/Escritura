@@ -54,14 +54,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 16,
             children: [
-              VerseSelector(
-                ref: _ref,
-                onSelected: (ref) => setState(() {
-                  _ref = ref;
-                  _attempts = 0;
-                  _clear();
-                }),
-              ),
+              VerseSelector(ref: _ref, onSelected: _selectRef),
               if (_result != Result.unknown && bibleService.hasVerse(_ref))
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -107,7 +100,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                   children: [
                     Expanded(
                       child: FilledButton.tonal(
-                        onPressed: _clear,
+                        onPressed: _clearInput,
                         child: Text('Clear'),
                       ),
                     ),
@@ -121,15 +114,10 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                 ),
               if (_result == Result.correct && _ref.complete)
                 FilledButton(
-                  onPressed: () {
-                    _clear();
-                    // TODO: go to the next verse in the user's queue
-                    setState(
-                      () => _ref = _ref.copyWith(
-                        verseNumber: _ref.verseNumber! + 1,
-                      ),
-                    );
-                  },
+                  // TODO: go to the next verse in the user's queue
+                  onPressed: () => _selectRef(
+                    _ref.copyWith(verseNumber: _ref.verseNumber! + 1),
+                  ),
                   child: Text('Next'),
                 ),
             ],
@@ -139,10 +127,18 @@ class _VerseMemorizationState extends State<VerseMemorization> {
     );
   }
 
-  void _clear() => setState(() {
+  void _selectRef(ScriptureRef ref) {
+    setState(() {
+      _ref = ref;
+      _result = Result.unknown;
+      _attempts = 0;
+      _clearInput();
+    });
+  }
+
+  void _clearInput() => setState(() {
     _inputController.clear();
     _input = '';
-    _result = Result.unknown;
   });
 
   void _gradeSubmission(String actualVerse) {
