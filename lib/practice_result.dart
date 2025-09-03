@@ -12,7 +12,8 @@ class MemorizationResult {
 
   String get scoreString => switch ((attempts, score)) {
     (1, >= 0.9) => '🎉',
-    (1, _) => '✅',
-    _ => '♻️',
+    (1, >= 0.5) => '✅',
+    (_, >= 0.5) => '♻️',
+    _ => '⛔',
   };
 }
