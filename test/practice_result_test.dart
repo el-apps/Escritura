@@ -7,7 +7,7 @@ void main() {
     final ref = ScriptureRef(bookId: 'jas', chapterNumber: 1, verseNumber: 1);
 
     test('scoreString returns 🎉 for 1 attempt and score 0.9', () {
-      final result = MemorizationResult(ref: ref, attempts: 1, score: 0.1);
+      final result = MemorizationResult(ref: ref, attempts: 1, score: 0.9);
       expect(result.scoreString, '🎉');
     });
 
