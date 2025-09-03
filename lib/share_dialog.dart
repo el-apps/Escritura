@@ -18,7 +18,7 @@ class ShareDialog extends StatelessWidget {
         'Memorization',
         ...memorizationResults.map(
           (result) =>
-              '${result.scoreString} ${result.attempts == 1 ? "" : "(${result.attempts} attempts)"} ${bibleService.getRefName(result.ref)}',
+              '${result.scoreString} ${bibleService.getRefName(result.ref)}',
         ),
       ].join('\n'),
       // TODO: add results from other parts of the app
