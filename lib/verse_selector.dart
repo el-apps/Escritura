@@ -26,6 +26,7 @@ class VerseSelector extends StatelessWidget {
       context: context,
       builder: (context) => SelectVerseDialog(
         ref: ref,
+        // AI!: instead of passing in the onSelected callback, let's pop the value from the dialog and then call onSelected in _openSelectorDialog
         onSelected: onSelected,
       ),
     );
