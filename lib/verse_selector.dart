@@ -22,14 +22,16 @@ class VerseSelector extends StatelessWidget {
   }
 
   void _openSelectorDialog(BuildContext context) async {
-    await showDialog(
+    final selectedRef = await showDialog<ScriptureRef>(
       context: context,
       builder: (context) => SelectVerseDialog(
         ref: ref,
-        // AI!: instead of passing in the onSelected callback, let's pop the value from the dialog and then call onSelected in _openSelectorDialog
-        onSelected: onSelected,
       ),
     );
+
+    if (selectedRef != null) {
+      onSelected(selectedRef);
+    }
   }
 }
 
@@ -37,11 +39,9 @@ class SelectVerseDialog extends StatefulWidget {
   const SelectVerseDialog({
     super.key,
     required this.ref,
-    required this.onSelected,
   });
 
   final ScriptureRef ref;
-  final Function(ScriptureRef) onSelected;
 
   @override
   State<SelectVerseDialog> createState() => _SelectVerseDialogState();
@@ -146,8 +146,7 @@ class _SelectVerseDialogState extends State<SelectVerseDialog> {
         TextButton(
           child: const Text('Select'),
           onPressed: () {
-            widget.onSelected(selected);
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(selected);
           },
         ),
       ],
