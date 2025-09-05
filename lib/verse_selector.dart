@@ -22,21 +22,13 @@ class VerseSelector extends StatelessWidget {
   }
 
   void _openSelectorDialog(BuildContext context) async {
-    // AI!: remove unneeded variable
-    final bibleService = context.read<BibleService>();
-    ScriptureRef selected = ref;
     await showDialog(
       context: context,
       builder: (context) => SelectVerseDialog(
         ref: ref,
-        // AI!: Remove unneeded callback and selected variable
-        onSelected: (scriptureRef) {
-          selected = scriptureRef;
-        },
+        onSelected: onSelected,
       ),
-    ).then((_) {
-      onSelected(selected);
-    });
+    );
   }
 }
 
