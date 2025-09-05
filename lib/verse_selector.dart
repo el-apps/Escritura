@@ -22,12 +22,14 @@ class VerseSelector extends StatelessWidget {
   }
 
   void _openSelectorDialog(BuildContext context) async {
+    // AI!: remove unneeded variable
     final bibleService = context.read<BibleService>();
     ScriptureRef selected = ref;
     await showDialog(
       context: context,
       builder: (context) => SelectVerseDialog(
         ref: ref,
+        // AI!: Remove unneeded callback and selected variable
         onSelected: (scriptureRef) {
           selected = scriptureRef;
         },
@@ -120,17 +122,18 @@ class _SelectVerseDialogState extends State<SelectVerseDialog> {
                     child: DropdownMenu(
                       expandedInsets: EdgeInsets.zero,
                       initialSelection: selected.verseNumber,
-                      dropdownMenuEntries: (bibleService.getVerses(
-                            selected.bookId!,
-                            selected.chapterNumber!,
-                          ))
-                          .map<DropdownMenuEntry<int>>(
-                            (verse) => DropdownMenuEntry(
-                              value: verse.num,
-                              label: verse.num.toString(),
-                            ),
-                          )
-                          .toList(),
+                      dropdownMenuEntries:
+                          (bibleService.getVerses(
+                                selected.bookId!,
+                                selected.chapterNumber!,
+                              ))
+                              .map<DropdownMenuEntry<int>>(
+                                (verse) => DropdownMenuEntry(
+                                  value: verse.num,
+                                  label: verse.num.toString(),
+                                ),
+                              )
+                              .toList(),
                       onSelected: (verseNumber) => setState(
                         () => (selected = selected.copyWith(
                           verseNumber: verseNumber,
