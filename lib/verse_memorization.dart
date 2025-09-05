@@ -90,28 +90,38 @@ class _VerseMemorizationState extends State<VerseMemorization> {
                     border: Border.all(color: _result.color),
                   ),
                   child: Text(switch (_result) {
+                    Result.learn => 'Practice the verse...',
                     Result.incorrect => 'Try again',
                     Result.correct => 'Correct!',
                     // This case should never be reached
                     Result.unknown => '',
                   }, style: Theme.of(context).textTheme.bodyLarge),
                 ),
-              if (_input.isNotEmpty && _result != Result.correct)
+              if (_result != Result.correct && _ref.complete)
                 Row(
                   spacing: 8,
                   children: [
-                    Expanded(
-                      child: FilledButton.tonal(
-                        onPressed: _clearInput,
-                        child: Text('Clear'),
+                    if (_input.isNotEmpty)
+                      Expanded(
+                        child: FilledButton.tonal(
+                          onPressed: _clearInput,
+                          child: Text('Clear'),
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () => _gradeSubmission(actualVerse),
-                        child: Text('Submit'),
+                    if (_input.isEmpty && _attempts == 0)
+                      Expanded(
+                        child: FilledButton.tonal(
+                          onPressed: _viewVerse,
+                          child: Text('View Verse'),
+                        ),
                       ),
-                    ),
+                    if (_input.isNotEmpty)
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () => _gradeSubmission(actualVerse),
+                          child: Text('Submit'),
+                        ),
+                      ),
                   ],
                 ),
               if (_result == Result.correct && _ref.complete) ...[
@@ -150,6 +160,13 @@ class _VerseMemorizationState extends State<VerseMemorization> {
     _input = '';
   });
 
+  void _viewVerse() {
+    setState(() {
+      _attempts += 1;
+      _result = Result.learn;
+    });
+  }
+
   void _gradeSubmission(String actualVerse) {
     if (kDebugMode) {
       print(actualVerse);
@@ -176,6 +193,7 @@ class _VerseMemorizationState extends State<VerseMemorization> {
 
 enum Result {
   unknown(color: Colors.brown),
+  learn(color: Colors.blue),
   incorrect(color: Colors.red),
   correct(color: Colors.green);
 
