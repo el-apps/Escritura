@@ -26,6 +26,8 @@ class VerseSelector extends StatelessWidget {
     ScriptureRef selected = ref;
     await showDialog(
       context: context,
+
+      // AI!: replace the StatefulBuilder with a new StatefulWidget at the bottom of this file called SelectVerseDialog
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: Text('Select Verse'),
