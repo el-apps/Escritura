@@ -26,102 +26,135 @@ class VerseSelector extends StatelessWidget {
     ScriptureRef selected = ref;
     await showDialog(
       context: context,
-
-      // AI!: replace the StatefulBuilder with a new StatefulWidget at the bottom of this file called SelectVerseDialog
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Select Verse'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 8,
-            children: [
-              DropdownMenu(
-                width: double.infinity,
-                initialSelection: selected.bookId,
-                dropdownMenuEntries: bibleService.books
-                    .map<DropdownMenuEntry<String>>(
-                      (book) =>
-                          DropdownMenuEntry(value: book.id, label: book.title),
-                    )
-                    .toList(),
-                onSelected: (bookId) => setState(
-                  () => (selected = selected.copyWith(
-                    bookId: bookId,
-                    chapterNumber: selected.chapterNumber ?? 1,
-                    verseNumber: selected.verseNumber ?? 1,
-                  )),
-                ),
-              ),
-              if (selected.bookId != null)
-                Row(
-                  spacing: 8,
-                  children: [
-                    if (selected.bookId != null)
-                      Expanded(
-                        child: DropdownMenu(
-                          expandedInsets: EdgeInsets.zero,
-                          initialSelection: selected.chapterNumber,
-                          dropdownMenuEntries:
-                              (bibleService.getChapters(selected.bookId!))
-                                  .map<DropdownMenuEntry<int>>(
-                                    (chapter) => DropdownMenuEntry(
-                                      value: chapter.num,
-                                      label: chapter.num.toString(),
-                                    ),
-                                  )
-                                  .toList(),
-                          onSelected: (chapterNumber) => setState(
-                            () => (selected = selected.copyWith(
-                              chapterNumber: chapterNumber,
-                              verseNumber: selected.verseNumber ?? 1,
-                            )),
-                          ),
-                        ),
-                      ),
-                    if (selected.chapterNumber != null)
-                      Expanded(
-                        child: DropdownMenu(
-                          expandedInsets: EdgeInsets.zero,
-                          initialSelection: selected.verseNumber,
-                          dropdownMenuEntries:
-                              (bibleService.getVerses(
-                                    selected.bookId!,
-                                    selected.chapterNumber!,
-                                  ))
-                                  .map<DropdownMenuEntry<int>>(
-                                    (verse) => DropdownMenuEntry(
-                                      value: verse.num,
-                                      label: verse.num.toString(),
-                                    ),
-                                  )
-                                  .toList(),
-                          onSelected: (verseNumber) => setState(
-                            () => (selected = selected.copyWith(
-                              verseNumber: verseNumber,
-                            )),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: Text('Select'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                onSelected(selected);
-              },
-            ),
-          ],
-        ),
+      builder: (context) => SelectVerseDialog(
+        ref: ref,
+        onSelected: (scriptureRef) {
+          selected = scriptureRef;
+        },
       ),
+    ).then((_) {
+      onSelected(selected);
+    });
+  }
+}
+
+class SelectVerseDialog extends StatefulWidget {
+  const SelectVerseDialog({
+    super.key,
+    required this.ref,
+    required this.onSelected,
+  });
+
+  final ScriptureRef ref;
+  final Function(ScriptureRef) onSelected;
+
+  @override
+  State<SelectVerseDialog> createState() => _SelectVerseDialogState();
+}
+
+class _SelectVerseDialogState extends State<SelectVerseDialog> {
+  late ScriptureRef selected;
+
+  @override
+  void initState() {
+    super.initState();
+    selected = widget.ref;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bibleService = context.read<BibleService>();
+
+    return AlertDialog(
+      title: const Text('Select Verse'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 8,
+        children: [
+          DropdownMenu(
+            width: double.infinity,
+            initialSelection: selected.bookId,
+            dropdownMenuEntries: bibleService.books
+                .map<DropdownMenuEntry<String>>(
+                  (book) =>
+                      DropdownMenuEntry(value: book.id, label: book.title),
+                )
+                .toList(),
+            onSelected: (bookId) => setState(
+              () => (selected = selected.copyWith(
+                bookId: bookId,
+                chapterNumber: selected.chapterNumber ?? 1,
+                verseNumber: selected.verseNumber ?? 1,
+              )),
+            ),
+          ),
+          if (selected.bookId != null)
+            Row(
+              spacing: 8,
+              children: [
+                if (selected.bookId != null)
+                  Expanded(
+                    child: DropdownMenu(
+                      expandedInsets: EdgeInsets.zero,
+                      initialSelection: selected.chapterNumber,
+                      dropdownMenuEntries:
+                          (bibleService.getChapters(selected.bookId!))
+                              .map<DropdownMenuEntry<int>>(
+                                (chapter) => DropdownMenuEntry(
+                                  value: chapter.num,
+                                  label: chapter.num.toString(),
+                                ),
+                              )
+                              .toList(),
+                      onSelected: (chapterNumber) => setState(
+                        () => (selected = selected.copyWith(
+                          chapterNumber: chapterNumber,
+                          verseNumber: selected.verseNumber ?? 1,
+                        )),
+                      ),
+                    ),
+                  ),
+                if (selected.chapterNumber != null)
+                  Expanded(
+                    child: DropdownMenu(
+                      expandedInsets: EdgeInsets.zero,
+                      initialSelection: selected.verseNumber,
+                      dropdownMenuEntries: (bibleService.getVerses(
+                            selected.bookId!,
+                            selected.chapterNumber!,
+                          ))
+                          .map<DropdownMenuEntry<int>>(
+                            (verse) => DropdownMenuEntry(
+                              value: verse.num,
+                              label: verse.num.toString(),
+                            ),
+                          )
+                          .toList(),
+                      onSelected: (verseNumber) => setState(
+                        () => (selected = selected.copyWith(
+                          verseNumber: verseNumber,
+                        )),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        TextButton(
+          child: const Text('Select'),
+          onPressed: () {
+            widget.onSelected(selected);
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
     );
   }
 }
